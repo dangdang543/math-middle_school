@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이차식 인수분해 퀴즈</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center; }
+        h1 { color: #1a73e8; margin-bottom: 0.5rem; }
+        .mode-selection button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; background: #e3f2fd; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .mode-selection button:hover { background: #bbdefb; }
+        .equation { font-size: 2rem; font-weight: bold; margin: 2rem 0; color: #202124; font-style: italic; }
+        .input-area { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1.5rem; margin-bottom: 1.5rem; }
+        input { width: 50px; padding: 8px; border: 2px solid #ddd; border-radius: 5px; text-align: center; font-size: 1.2rem; }
+        input:focus { border-color: #1a73e8; outline: none; }
+        .btn-check { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
+        .btn-check:hover { background: #1557b0; }
+        .score { margin-top: 1.5rem; color: #5f6368; }
+        .hidden { display: none; }
+        .back-btn { margin-top: 1rem; font-size: 0.9rem; color: #d93025; cursor: pointer; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div id="screen-menu">
+        <h1>인수분해 퀴즈</h1>
+        <p>난이도를 선택해 보세요!</p>
+        <div class="mode-selection">
+            <button onclick="startQuiz(1)">유형 1: x² 계수가 1인 식</button>
+            <button onclick="startQuiz(2)">유형 2: x² 계수가 랜덤인 식</button>
+        </div>
+    </div>
+
+    <div id="screen-quiz" class="hidden">
+        <p id="quiz-mode-title" style="color:#777;"></p>
+        <div class="equation" id="display-equation">x² + 5x + 6</div>
+        
+        <div class="input-area" id="input-container">
+            </div>
+
+        <button class="btn-check" onclick="checkAnswer()">정답 확인 (Enter)</button>
+        <div class="score">맞힌 개수: <span id="score-count">0</span></div>
+        <div class="back-btn" onclick="showMenu()">메뉴로 돌아가기</div>
+    </div>
+</div>
+
+<script>
+    let currentMode = 1;
+    let score = 0;
+    let solution = { m:1, p:0, n:1, q:0 };
+
+    function showMenu() {
+        document.getElementById('screen-menu').classList.remove('hidden');
+        document.getElementById('screen-quiz').classList.add('hidden');
+    }
+
+    function startQuiz(mode) {
+        currentMode = mode;
+        document.getElementById('screen-menu').classList.add('hidden');
+        document.getElementById('screen-quiz').classList.remove('hidden');
+        document.getElementById('quiz-mode-title').innerText = mode === 1 ? "기초 (계수 1)" : "심화 (랜덤 계수)";
+        createInputs();
+        nextQuestion();
+    }
+
+    function createInputs() {
+        const container = document.getElementById('input-container');
+        container.innerHTML = '';
+        if (currentMode === 1) {
+            container.innerHTML = `( x + <input type="number" id="ans-p"> ) ( x + <input type="number" id="ans-q"> )`;
+        } else {
+            container.innerHTML = `( <input type="number" id="ans-m"> x + <input type="number" id="ans-p"> ) ( <input type="number" id="ans-n"> x + <input type="number" id="ans-q"> )`;
+        }
+        
+        // 엔터키 바인딩
+        const inputs = container.querySelectorAll('input');
+        inputs.forEach((input, index) => {
+            input.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
+        });
+    }
+
+    function formatCoeff(val, term, isFirst) {
+        if (val === 0) return "";
+        let sign = isFirst ? (val < 0 ? "-" : "") : (val > 0 ? " + " : " - ");
+        let absVal = Math.abs(val);
+        let numStr = (absVal === 1 && term !== "") ? "" : absVal;
+        return sign + numStr + term;
+    }
+
+    function nextQuestion() {
+        let m = currentMode === 1 ? 1 : Math.floor(Math.random() * 4) + 1;
+        let n = currentMode === 1 ? 1 : Math.floor(Math.random() * 4) + 1;
+        let p = (Math.floor(Math.random() * 18) - 9) || 1;
+        let q = (Math.floor(Math.random() * 18) - 9) || 1;
+
+        solution = { m, p, n, q };
+
+        let a = m * n;
+        let b = m * q + n * p;
+        let c = p * q;
+
+        let eqHtml = formatCoeff(a, "x²", true) + formatCoeff(b, "x", false) + formatCoeff(c, "", false);
+        document.getElementById('display-equation').innerHTML = eqHtml;
+
+        const inputs = document.querySelectorAll('#input-container input');
+        inputs.forEach(i => i.value = '');
+        inputs[0].focus();
+    }
+
+    function checkAnswer() {
+        try {
+            let um, up, un, uq;
+            if (currentMode === 1) {
+                um = 1; un = 1;
+                up = parseInt(document.getElementById('ans-p').value);
+                uq = parseInt(document.getElementById('ans-q').value);
+            } else {
+                um = parseInt(document.getElementById('ans-m').value);
+                up = parseInt(document.getElementById('ans-p').value);
+                un = parseInt(document.getElementById('ans-n').value);
+                uq = parseInt(document.getElementById('ans-q').value);
+            }
+
+            const isCorrect = (um === solution.m && up === solution.p && un === solution.n && uq === solution.q) ||
+                              (um === solution.n && up === solution.q && un === solution.m && uq === solution.p);
+
+            if (isCorrect) {
+                alert("정답입니다!");
+                score++;
+                document.getElementById('score-count').innerText = score;
+                nextQuestion();
+            } else {
+                alert("틀렸습니다. 다시 계산해 보세요!");
+            }
+        } catch (e) {
+            alert("모든 칸에 숫자를 입력해 주세요.");
+        }
+    }
+</script>
+
+</body>
+</html>
