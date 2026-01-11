@@ -11,11 +11,12 @@
         .mode-selection button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #e3f2fd; cursor: pointer; font-size: 1rem; font-weight: bold; }
         .equation { font-size: 1.8rem; font-weight: bold; margin: 1.5rem 0; color: #202124; font-style: italic; background: #f8f9fa; padding: 10px; border-radius: 10px; }
         .input-area { display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 1.1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        
+        /* 모바일 숫자 패드를 위한 tel 타입 설정 */
         input { width: 55px; padding: 12px 5px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-size: 1.1rem; }
         input:focus { border-color: #1a73e8; outline: none; background-color: #f8fbff; }
         
-        /* 마이너스 입력 버튼 스타일 */
-        .minus-btn { background: #6c757d; color: white; border: none; border-radius: 5px; padding: 5px 10px; font-size: 0.9rem; cursor: pointer; margin-bottom: 10px; }
+        .minus-btn { background: #6c757d; color: white; border: none; border-radius: 5px; padding: 8px 12px; font-size: 0.9rem; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
         .minus-btn:active { background: #495057; }
 
         .btn-check { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; margin-top: 5px; }
@@ -39,7 +40,7 @@
     <div id="screen-quiz" class="hidden">
         <div class="equation" id="display-equation"></div>
         
-        <button class="minus-btn" onclick="insertMinus()">부호 선택: [ - ] 넣기</button>
+        <button class="minus-btn" onclick="insertMinus()">부호 선택: [ - ] 넣기 / 빼기</button>
         
         <div class="input-area" id="input-container"></div>
 
@@ -68,13 +69,13 @@
         nextQuestion();
     }
 
-    // 마이너스 기호를 현재 포커스된 칸에 넣어주는 함수
     function insertMinus() {
         if (lastFocusedInput) {
-            if (lastFocusedInput.value.startsWith('-')) {
-                lastFocusedInput.value = lastFocusedInput.value.substring(1);
+            let val = lastFocusedInput.value;
+            if (val.startsWith('-')) {
+                lastFocusedInput.value = val.substring(1);
             } else {
-                lastFocusedInput.value = '-' + lastFocusedInput.value;
+                lastFocusedInput.value = '-' + val;
             }
             lastFocusedInput.focus();
         } else {
@@ -86,15 +87,15 @@
         const container = document.getElementById('input-container');
         container.innerHTML = '';
         
+        // type="tel"은 모바일에서 숫자 패드(및 기호)를 띄웁니다.
         if (currentMode === 1) {
-            container.innerHTML = `( x + <input type="text" id="ans-p"> ) ( x + <input type="text" id="ans-q"> )`;
+            container.innerHTML = `( x + <input type="tel" id="ans-p"> ) ( x + <input type="tel" id="ans-q"> )`;
         } else {
-            container.innerHTML = `( <input type="text" id="ans-m"> x + <input type="text" id="ans-p"> ) ( <input type="text" id="ans-n"> x + <input type="text" id="ans-q"> )`;
+            container.innerHTML = `( <input type="tel" id="ans-m"> x + <input type="tel" id="ans-p"> ) ( <input type="tel" id="ans-n"> x + <input type="tel" id="ans-q"> )`;
         }
         
         const inputs = container.querySelectorAll('input');
         inputs.forEach((input) => {
-            // 어떤 칸이 마지막으로 선택되었는지 기억함
             input.addEventListener('focus', () => { lastFocusedInput = input; });
             input.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
         });
