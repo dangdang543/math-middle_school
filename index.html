@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>이차식 인수분해 퀴즈</title>
     <style>
-        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { font-family: 'Pretendard', -apple-system, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center; }
         h1 { color: #1a73e8; margin-bottom: 0.5rem; }
-        .mode-selection button { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 8px; background: #e3f2fd; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .mode-selection button { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 8px; background: #e3f2fd; cursor: pointer; font-size: 1.1rem; transition: 0.3s; font-weight: bold; }
         .mode-selection button:hover { background: #bbdefb; }
-        .equation { font-size: 2rem; font-weight: bold; margin: 2rem 0; color: #202124; font-style: italic; }
-        .input-area { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1.5rem; margin-bottom: 1.5rem; }
-        input { width: 50px; padding: 8px; border: 2px solid #ddd; border-radius: 5px; text-align: center; font-size: 1.2rem; }
-        input:focus { border-color: #1a73e8; outline: none; }
-        .btn-check { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; }
+        .equation { font-size: 2.2rem; font-weight: bold; margin: 2rem 0; color: #202124; font-style: italic; letter-spacing: 1px; }
+        .input-area { display: flex; justify-content: center; align-items: center; gap: 5px; font-size: 1.3rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        /* 모바일에서 마이너스 입력을 돕기 위한 input 설정 */
+        input { width: 60px; padding: 10px 5px; border: 2px solid #ddd; border-radius: 8px; text-align: center; font-size: 1.2rem; appearance: none; }
+        input:focus { border-color: #1a73e8; outline: none; background-color: #f8fbff; }
+        .btn-check { width: 100%; padding: 15px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
         .btn-check:hover { background: #1557b0; }
-        .score { margin-top: 1.5rem; color: #5f6368; }
+        .score { margin-top: 1.5rem; color: #5f6368; font-weight: bold; }
         .hidden { display: none; }
-        .back-btn { margin-top: 1rem; font-size: 0.9rem; color: #d93025; cursor: pointer; text-decoration: underline; }
+        .back-btn { margin-top: 1.5rem; font-size: 0.9rem; color: #d93025; cursor: pointer; text-decoration: underline; display: inline-block; }
     </style>
 </head>
 <body>
@@ -26,7 +27,7 @@
 <div class="container" id="app">
     <div id="screen-menu">
         <h1>인수분해 퀴즈</h1>
-        <p>난이도를 선택해 보세요!</p>
+        <p>조카와 함께하는 수학 도전!</p>
         <div class="mode-selection">
             <button onclick="startQuiz(1)">유형 1: x² 계수가 1인 식</button>
             <button onclick="startQuiz(2)">유형 2: x² 계수가 랜덤인 식</button>
@@ -34,15 +35,15 @@
     </div>
 
     <div id="screen-quiz" class="hidden">
-        <p id="quiz-mode-title" style="color:#777;"></p>
-        <div class="equation" id="display-equation">x² + 5x + 6</div>
+        <p id="quiz-mode-title" style="color:#777; font-weight: bold;"></p>
+        <div class="equation" id="display-equation"></div>
         
         <div class="input-area" id="input-container">
             </div>
 
         <button class="btn-check" onclick="checkAnswer()">정답 확인 (Enter)</button>
-        <div class="score">맞힌 개수: <span id="score-count">0</span></div>
-        <div class="back-btn" onclick="showMenu()">메뉴로 돌아가기</div>
+        <div class="score">현재 점수: <span id="score-count">0</span>점</div>
+        <div class="back-btn" onclick="showMenu()">다른 난이도 선택하기</div>
     </div>
 </div>
 
@@ -60,7 +61,7 @@
         currentMode = mode;
         document.getElementById('screen-menu').classList.add('hidden');
         document.getElementById('screen-quiz').classList.remove('hidden');
-        document.getElementById('quiz-mode-title').innerText = mode === 1 ? "기초 (계수 1)" : "심화 (랜덤 계수)";
+        document.getElementById('quiz-mode-title').innerText = mode === 1 ? "기초 모드 (x² 계수 = 1)" : "심화 모드 (계수 랜덤)";
         createInputs();
         nextQuestion();
     }
@@ -68,15 +69,21 @@
     function createInputs() {
         const container = document.getElementById('input-container');
         container.innerHTML = '';
+        
+        // type="text"와 inputmode="text"를 조합하여 모바일에서 모든 기호(마이너스 등)를 입력 가능하게 함
         if (currentMode === 1) {
-            container.innerHTML = `( x + <input type="number" id="ans-p"> ) ( x + <input type="number" id="ans-q"> )`;
+            container.innerHTML = `
+                ( x + <input type="text" id="ans-p" inputmode="text" placeholder="숫자"> ) 
+                ( x + <input type="text" id="ans-q" inputmode="text" placeholder="숫자"> )`;
         } else {
-            container.innerHTML = `( <input type="number" id="ans-m"> x + <input type="number" id="ans-p"> ) ( <input type="number" id="ans-n"> x + <input type="number" id="ans-q"> )`;
+            container.innerHTML = `
+                ( <input type="text" id="ans-m" inputmode="text"> x + <input type="text" id="ans-p"> ) 
+                ( <input type="text" id="ans-n" inputmode="text"> x + <input type="text" id="ans-q"> )`;
         }
         
-        // 엔터키 바인딩
+        // 엔터키 누르면 바로 정답 체크
         const inputs = container.querySelectorAll('input');
-        inputs.forEach((input, index) => {
+        inputs.forEach((input) => {
             input.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkAnswer(); });
         });
     }
@@ -123,19 +130,25 @@
                 uq = parseInt(document.getElementById('ans-q').value);
             }
 
+            // 숫자가 아닌 값이 들어왔는지 체크
+            if (isNaN(up) || isNaN(uq) || (currentMode === 2 && (isNaN(um) || isNaN(un)))) {
+                alert("모든 칸에 숫자를 입력해 주세요!");
+                return;
+            }
+
             const isCorrect = (um === solution.m && up === solution.p && un === solution.n && uq === solution.q) ||
                               (um === solution.n && up === solution.q && un === solution.m && uq === solution.p);
 
             if (isCorrect) {
-                alert("정답입니다!");
+                alert("정답입니다! 잘했어요! 👍");
                 score++;
                 document.getElementById('score-count').innerText = score;
                 nextQuestion();
             } else {
-                alert("틀렸습니다. 다시 계산해 보세요!");
+                alert("틀렸습니다. 다시 한번 계산해 볼까요? 😊");
             }
         } catch (e) {
-            alert("모든 칸에 숫자를 입력해 주세요.");
+            alert("입력한 내용을 다시 확인해 주세요.");
         }
     }
 </script>
