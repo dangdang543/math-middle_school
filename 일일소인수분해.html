@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10ⁿ + 1 소인수분해 도구</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 95%; max-width: 500px; text-align: center; }
+        h1 { color: #2e7d32; font-size: 1.6rem; margin-bottom: 1.5rem; }
+        p { font-size: 0.9rem; color: #666; margin-bottom: 2rem; line-height: 1.5; }
+        .input-group { margin-bottom: 2rem; }
+        input { width: 80%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1.2rem; text-align: center; outline: none; }
+        input:focus { border-color: #2e7d32; }
+        button { width: 85%; padding: 15px; background: #2e7d32; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        button:hover { background: #1b5e20; }
+        
+        #result-area { margin-top: 2rem; padding: 25px; border-radius: 15px; background: #f9f9f9; border: 1px dashed #2e7d32; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .target-num { font-size: 1rem; color: #555; margin-bottom: 12px; }
+        .factorization { font-size: 1.8rem; font-weight: bold; color: #2e7d32; word-break: break-all; line-height: 1.4; }
+        sup { font-size: 1rem; color: #1b5e20; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>10ⁿ + 1 소인수분해</h1>
+    <p>분모가 7, 13, 11 등일 때 순환소수의<br>신비로운 대칭성을 발견해보세요!</p>
+    
+    <div class="input-group">
+        <input type="number" id="n-value" placeholder="n 값을 입력 (예: 3)" min="1" max="15">
+        <button onclick="calculatePlus()">소인수분해 결과 보기</button>
+    </div>
+
+    <div id="result-area">
+        <div id="target-text" class="target-num">n을 입력하고 버튼을 눌러주세요.</div>
+        <div id="factor-text" class="factorization"></div>
+    </div>
+</div>
+
+<script>
+    function calculatePlus() {
+        const nInput = document.getElementById('n-value').value;
+        const n = parseInt(nInput);
+        
+        if (isNaN(n) || n < 1) {
+            alert("1 이상의 숫자를 입력해주세요.");
+            return;
+        }
+
+        // 10^n + 1 계산 (BigInt 사용)
+        let num = BigInt("1" + "0".repeat(n - 1) + "1");
+        if (n === 0) num = 2n; // 10^0 + 1
+
+        const factors = factorize(num);
+        displayResult(n, num.toLocaleString(), factors);
+    }
+
+    function factorize(num) {
+        let n = num;
+        let counts = {};
+        let d = 2n;
+
+        while (d * d <= n) {
+            while (n % d === 0n) {
+                counts[d] = (counts[d] || 0) + 1;
+                n /= d;
+            }
+            d++;
+            // 성능 최적화: 2 이후로는 홀수만 검사
+            if (d > 2n && d % 2n === 0n) d++;
+        }
+        if (n > 1n) {
+            counts[n] = (counts[n] || 0) + 1;
+        }
+        return counts;
+    }
+
+    function displayResult(n, originalNum, factors) {
+        document.getElementById('target-text').innerHTML = `10<sup>${n}</sup> + 1 = ${originalNum}`;
+        
+        const keys = Object.keys(factors).sort((a, b) => Number(BigInt(a) - BigInt(b)));
+        let factorHTML = "";
+        
+        keys.forEach((p, index) => {
+            let exponent = factors[p];
+            factorHTML += (exponent > 1) ? `${p}<sup>${exponent}</sup>` : `${p}`;
+            if (index < keys.length - 1) factorHTML += " × ";
+        });
+        
+        document.getElementById('factor-text').innerHTML = factorHTML;
+    }
+
+    document.getElementById('n-value').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') calculatePlus();
+    });
+</script>
+
+</body>
+</html>
