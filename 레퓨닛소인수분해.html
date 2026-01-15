@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레퓨닛(Rn) 소인수분해 도구</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background-color: #fff4e5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 500px; text-align: center; }
+        h1 { color: #e65100; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .formula { font-size: 1.1rem; color: #fb8c00; margin-bottom: 1.5rem; font-weight: bold; }
+        p { font-size: 0.85rem; color: #777; margin-bottom: 1.5rem; line-height: 1.6; }
+        .input-group { margin-bottom: 1.5rem; }
+        input { width: 70%; padding: 12px; border: 2px solid #ffcc80; border-radius: 10px; font-size: 1.2rem; text-align: center; outline: none; }
+        input:focus { border-color: #e65100; }
+        button { width: 78%; padding: 15px; background: #fb8c00; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1.1rem; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #e65100; }
+        
+        #result-area { margin-top: 1.5rem; padding: 20px; border-radius: 15px; background: #fffbf2; border: 1px solid #ffe0b2; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .repunit-display { font-size: 1rem; color: #555; margin-bottom: 8px; border-bottom: 1px solid #ffe0b2; padding-bottom: 5px; }
+        .factorization { font-size: 1.6rem; font-weight: bold; color: #bf360c; word-break: break-all; line-height: 1.5; }
+        sup { font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>레퓨닛(Repunit) 분해</h1>
+    <div class="formula">R<sub>n</sub> = (10ⁿ - 1) / 9</div>
+    <p>1이 n번 반복되는 숫자(11...1)의<br>숨겨진 소인수들을 찾아보세요!</p>
+
+    <div class="input-group">
+        <input type="number" id="n-input" placeholder="n 입력 (예: 6)" min="1" max="18">
+        <button onclick="calculateRepunit()">소인수분해 결과 보기</button>
+    </div>
+
+    <div id="result-area">
+        <div id="repunit-val" class="repunit-display">n을 입력해주세요.</div>
+        <div id="factor-display" class="factorization"></div>
+    </div>
+</div>
+
+<script>
+    function calculateRepunit() {
+        const n = parseInt(document.getElementById('n-input').value);
+        if (isNaN(n) || n < 1) {
+            alert("1 이상의 숫자를 입력해주세요.");
+            return;
+        }
+
+        // 1이 n번 반복되는 문자열 생성 및 BigInt 변환
+        const s = "1".repeat(n);
+        let num = BigInt(s);
+
+        const factors = factorize(num);
+        displayResult(n, s, factors);
+    }
+
+    function factorize(num) {
+        let n = num;
+        let counts = {};
+        let d = 2n;
+
+        while (d * d <= n) {
+            while (n % d === 0n) {
+                counts[d] = (counts[d] || 0) + 1;
+                n /= d;
+            }
+            d++;
+            if (d > 2n && d % 2n === 0n) d++;
+            // n이 너무 커지면 루프가 오래 걸릴 수 있으므로 
+            // 실습 도구 수준(n=18)에선 충분히 작동함
+        }
+        if (n > 1n) {
+            counts[n] = (counts[n] || 0) + 1;
+        }
+        return counts;
+    }
+
+    function displayResult(n, s, factors) {
+        const repDisplay = document.getElementById('repunit-val');
+        const factorDisplay = document.getElementById('factor-display');
+
+        repDisplay.innerHTML = `R<sub>${n}</sub> = ${s}`;
+
+        const keys = Object.keys(factors).sort((a, b) => {
+            const biA = BigInt(a);
+            const biB = BigInt(b);
+            return biA < biB ? -1 : (biA > biB ? 1 : 0);
+        });
+
+        let html = "";
+        keys.forEach((p, index) => {
+            let exp = factors[p];
+            html += (exp > 1) ? `${p}<sup>${exp}</sup>` : `${p}`;
+            if (index < keys.length - 1) html += " × ";
+        });
+
+        factorDisplay.innerHTML = html;
+    }
+
+    document.getElementById('n-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') calculateRepunit();
+    });
+</script>
+
+</body>
+</html>
